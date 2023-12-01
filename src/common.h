@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct {
     char *contents;
@@ -29,3 +30,11 @@ String read_file(char *path) {
 
     return (String) { .contents = contents, .size = size };
 }
+
+bool isPrefixOf(const char* str1, const char* str2) {
+    for (int i = 0; str1[i] != '\0'; i++) {
+        if (str1[i] != str2[i]) return false;
+    }
+    return true;
+}
+
