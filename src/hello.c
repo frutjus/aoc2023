@@ -1,13 +1,13 @@
 #include "raylib.h"
 
 int main() {
-	InitWindow(800, 450, "Hello!!!");
+	InitWindow(400, 100, "AoC 2023");
 	
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
 			
-			DrawText("Hello world", 300, 225, 30, BLACK);
+			DrawText("Select a day to run!", 60, 35, 30, BLACK);
 		EndDrawing();
 	}
 	

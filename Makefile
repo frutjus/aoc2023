@@ -1,9 +1,11 @@
+DAY = hello
+
 flgs = -static
-inc = -Iraylib-5.0_win64_mingw-w64\include
+inc = -Iraylib-5.0_win64_mingw-w64\include -Isrc
 lnk = -Lraylib-5.0_win64_mingw-w64\lib -lraylib -lopengl32 -lgdi32 -lwinmm
 
-hello.exe: hello.c
-	gcc hello.c -o hello.exe $(flgs) $(inc) $(lnk)
+run: exe/$(DAY).exe
+	./exe/$(DAY).exe
 
-run: hello.exe
-	./hello.exe
+exe/$(DAY).exe: src/$(DAY).c
+	gcc src/$(DAY).c -o exe/$(DAY).exe $(flgs) $(inc) $(lnk)
