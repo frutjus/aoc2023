@@ -7,5 +7,5 @@ lnk = -Lraylib-5.0_win64_mingw-w64\lib -lraylib -lopengl32 -lgdi32 -lwinmm
 run: exe/$(DAY).exe
 	./exe/$(DAY).exe
 
-exe/$(DAY).exe: src/$(DAY).c
+exe/$(DAY).exe: src/$(DAY).c src/common.h
 	gcc src/$(DAY).c -o exe/$(DAY).exe $(flgs) $(inc) $(lnk)

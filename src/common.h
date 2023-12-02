@@ -38,3 +38,44 @@ bool isPrefixOf(const char* str1, const char* str2) {
     return true;
 }
 
+int charToDigit(char c) {
+    return (int)c - 48;
+}
+
+/* --- Parsing --- */
+
+int parse_num(const char **str) {
+    int num = 0;
+
+    while (isdigit(**str)) {
+        num = num * 10 + charToDigit(**str);
+        (*str)++;
+    }
+
+    return num;
+}
+
+bool parse_string(const char **str, const char *substr) {
+    int i;
+    for (i = 0; substr[i] != '\0'; i++) {
+        if (substr[i] != (*str)[i]) {
+            return false;
+        }
+    }
+    *str += i;
+
+    return true;
+}
+
+bool parse_space(const char **str) {
+    return parse_string(str, " ");
+}
+
+bool parse_newline(const char **str) {
+    return parse_string(str, "\r\n") || parse_string(str, "\r") || parse_string(str, "\n");
+}
+
+bool peek(const char **str, bool *f(const char **str)) {
+    const char *curstr = *str;
+    return f(&curstr);
+}
