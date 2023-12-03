@@ -20,6 +20,7 @@ String read_file(char *path) {
     char *contents = (char*)malloc(size);
     if (!contents) {
         printf("Error; could not allocate %d bytes of memory\n", size);
+        exit(1);
     }
 
     fseek(f, 0, SEEK_SET);
@@ -75,7 +76,73 @@ bool parse_newline(const char **str) {
     return parse_string(str, "\r\n") || parse_string(str, "\r") || parse_string(str, "\n");
 }
 
-bool peek(const char **str, bool *f(const char **str)) {
-    const char *curstr = *str;
+bool peek(const char *str, bool f(const char **str)) {
+    const char *curstr = str;
     return f(&curstr);
 }
+
+/* --- Grid --- */
+
+typedef struct {
+    char **contents;
+    int width, height;
+} Grid;
+
+void measureDimensions(const String grid, int *width, int *height) {
+    *width = 0;
+    for (int i = 0; !peek(grid.contents + i, parse_newline); i++) {
+        (*width)++;
+    }
+    for (int i = 0; i < grid.size; i++) {
+        if (peek(grid.contents + i, parse_newline)) {
+            (*height)++;
+        }
+    }
+}
+
+Grid gridFromString(String str) {
+    int width = 0, height = 0;
+    measureDimensions(str, &width, &height);
+
+    char **contents = (char**)malloc(height * sizeof(char*));
+    
+    if (!contents) {
+        printf("Error; could not allocate %d bytes of memory\n", height * sizeof(char*));
+        exit(1);
+    }
+
+    for (int i = 0; i < height; i++) {
+        contents[i] = (char*)malloc(width);
+        if (!contents[i]) {
+            printf("Error; could not allocate %d bytes of memory\n", width);
+            exit(1);
+        }
+    }
+
+    int r = 0, c = 0;
+    for (const char *curstr = str.contents; *curstr != '\0'; curstr++) {
+        if (parse_newline(&curstr)) {
+            r++;
+            c = 0;
+        }
+        if (r < height && c < width) {
+            contents[r][c] = *curstr;
+            c++;
+        }
+    }
+
+    free(str.contents);
+
+    return (Grid) { contents, width, height };
+}
+
+void printGrid(Grid grid) {
+    for (int r = 0; r < grid.height; r++) {
+        for (int c = 0; c < grid.width; c++) {
+            printf("%c", grid.contents[r][c]);
+        }
+        printf("\n");
+    }
+}
+
+
