@@ -8,6 +8,11 @@ typedef struct {
     size_t size;
 } String;
 
+typedef struct {
+    int *contents;
+    size_t size;
+} ArrayInt;
+
 String read_file(char *path) {
     FILE *f = fopen(path, "r");
     if (!f) {
@@ -43,6 +48,14 @@ int charToDigit(char c) {
     return (int)c - 48;
 }
 
+bool ArrayInt_contains(ArrayInt arr, int val) {
+    for (int i = 0; i < arr.size; i++) {
+        if (arr.contents[i] == val)
+            return true;
+    }
+    return false;
+}
+
 /* --- Parsing --- */
 
 int parse_num(const char **str) {
@@ -72,6 +85,11 @@ bool parse_space(const char **str) {
     return parse_string(str, " ");
 }
 
+bool parse_spaces(const char **str) {
+    bool found = false;
+    while (parse_space(str)) found = true;
+}
+
 bool parse_newline(const char **str) {
     return parse_string(str, "\r\n") || parse_string(str, "\r") || parse_string(str, "\n");
 }
@@ -79,6 +97,41 @@ bool parse_newline(const char **str) {
 bool peek(const char *str, bool f(const char **str)) {
     const char *curstr = str;
     return f(&curstr);
+}
+
+ArrayInt parse_nums(const char **str, bool f(const char **str)) {
+    int size = 0;
+    const char *curstr = *str;
+
+    // first figure out how large the array should be
+    while (isdigit(*curstr)) {
+        parse_num(&curstr);
+        f(&curstr);
+        size++;
+    }
+
+    int *contents = (int*)malloc(size * sizeof(int));
+
+    // then actually read the numbers in
+    for (int i = 0; i < size; i++) {
+        contents[i] = parse_num(str);
+        f(str);
+    }
+
+    return (ArrayInt) { .contents = contents, .size = size };
+}
+
+int countLines(const char *str) {
+    const char *curstr = str;
+    int lines = 0;
+    while (*curstr != '\0') {
+        if (parse_newline(&curstr)) {
+            lines++;
+        } else {
+            curstr++;
+        }
+    }
+    return lines;
 }
 
 /* --- Grid --- */
