@@ -3,34 +3,41 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+void *myalloc(size_t bytes) {
+    void *p = malloc(bytes);
+    if (!p) {
+        printf("Error; could not allocate %lld bytes of memory\n", bytes);
+        exit(1);
+    }
+    return p;
+}
+
 typedef struct {
     char *contents;
     size_t size;
 } String;
 
 typedef struct {
-    int *contents;
+    unsigned long long int *contents;
     size_t size;
 } ArrayInt;
 
 String read_file(char *path) {
-    FILE *f = fopen(path, "r");
+    FILE *f = fopen(path, "rb");
     if (!f) {
-        printf("Error; could not open file: %s\n", f);
+        printf("Error; could not open file: %s\n", path);
         exit(1);
     }
 
     fseek(f, 0, SEEK_END);
-    size_t size = ftell(f) + 1;
-    char *contents = (char*)malloc(size);
-    if (!contents) {
-        printf("Error; could not allocate %d bytes of memory\n", size);
-        exit(1);
-    }
+    size_t size = ftell(f);
+    char *contents = (char*)myalloc(size+1);
+
+    //printf("file size = %lld\n", size);
 
     fseek(f, 0, SEEK_SET);
-    fread(contents, 1, size - 1, f);
-    contents[size] = 0;
+    fread(contents, 1, size, f);
+    contents[size] = '\0';
 
     fclose(f);
 
@@ -56,10 +63,54 @@ bool ArrayInt_contains(ArrayInt arr, int val) {
     return false;
 }
 
+/* --- Linked List --- */
+
+typedef struct _List {
+    void *contents;
+    struct _List *next;
+} List;
+
+List List_new() {
+    return (List) { .contents = 0, .next = 0 };
+}
+
+List *List_newm() {
+    List *list = (List*)myalloc(sizeof(List));
+    *list = List_new();
+    return list;
+}
+
+bool List_isempty(List list) {
+    return list.contents == 0;
+}
+
+void List_append(List *list, void *item) {
+    
+    if (List_isempty(*list)) {
+        List *newnode = (List*)myalloc(sizeof(List));
+        *newnode = List_new();
+
+        list->contents = item;
+        list->next = newnode;
+    } else {
+        List_append(list->next, item);
+    }
+}
+
+size_t List_size(List list) {
+    if (List_isempty(list)) {
+        return 0;
+    } else {
+        return 1 + List_size(*list.next);
+    }
+}
+
+
+
 /* --- Parsing --- */
 
-int parse_num(const char **str) {
-    int num = 0;
+unsigned long long int parse_num(const char **str) {
+    unsigned long long int num = 0;
 
     while (isdigit(**str)) {
         num = num * 10 + charToDigit(**str);
@@ -88,6 +139,7 @@ bool parse_space(const char **str) {
 bool parse_spaces(const char **str) {
     bool found = false;
     while (parse_space(str)) found = true;
+    return found;
 }
 
 bool parse_newline(const char **str) {
@@ -110,7 +162,7 @@ ArrayInt parse_nums(const char **str, bool f(const char **str)) {
         size++;
     }
 
-    int *contents = (int*)malloc(size * sizeof(int));
+    unsigned long long int *contents = (unsigned long long int*)malloc(size * sizeof(unsigned long long int));
 
     // then actually read the numbers in
     for (int i = 0; i < size; i++) {
@@ -132,6 +184,16 @@ int countLines(const char *str) {
         }
     }
     return lines;
+}
+
+bool skip_until(const char **str, bool f(const char **str)) {
+    while (**str != '\0') {
+        if (f(str)) {
+            return true;
+        }
+        (*str)++;
+    }
+    return false;
 }
 
 /* --- Grid --- */
@@ -157,19 +219,11 @@ Grid gridFromString(String str) {
     int width = 0, height = 0;
     measureDimensions(str, &width, &height);
 
-    char **contents = (char**)malloc(height * sizeof(char*));
+    char **contents = (char**)myalloc(height * sizeof(char*));
     
-    if (!contents) {
-        printf("Error; could not allocate %d bytes of memory\n", height * sizeof(char*));
-        exit(1);
-    }
 
     for (int i = 0; i < height; i++) {
-        contents[i] = (char*)malloc(width);
-        if (!contents[i]) {
-            printf("Error; could not allocate %d bytes of memory\n", width);
-            exit(1);
-        }
+        contents[i] = (char*)myalloc(width);
     }
 
     int r = 0, c = 0;
