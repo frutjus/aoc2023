@@ -87,8 +87,7 @@ bool List_isempty(List list) {
 void List_append(List *list, void *item) {
     
     if (List_isempty(*list)) {
-        List *newnode = (List*)myalloc(sizeof(List));
-        *newnode = List_new();
+        List *newnode = List_newm();
 
         list->contents = item;
         list->next = newnode;
@@ -105,7 +104,14 @@ size_t List_size(List list) {
     }
 }
 
-
+void List_appendList(List *list1, List *list2) {
+    if (List_isempty(*list1)) {
+        list1->contents = list2->contents;
+        list1->next = list2->next;
+    } else {
+        List_appendList(list1->next, list2);
+    }
+}
 
 /* --- Parsing --- */
 
