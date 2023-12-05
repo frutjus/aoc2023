@@ -51,41 +51,39 @@ List *parse_map(const char **str) {
     return ranges;
 }
 
-List *apply_map(CategoryRange sourcerng, List map) {
-    printf("Checking %llu to %llu...\n", sourcerng.range_start, sourcerng.range_start + sourcerng.range_length - 1);
+void apply_map(List *sources, List map) {
+    for (List *source = sources; !List_isempty(*source); source = source->next) {
+        for (List range = map; !List_isempty(range); range = *range.next) {
+            CategoryMapRange rng = *(CategoryMapRange*)range.contents;
+            CategoryRange src = **(CategoryRange**)source;
 
-    List *dests = List_newm();
-
-    for (List range = map; !List_isempty(range); range = *range.next) {
-        CategoryMapRange rng = *(CategoryMapRange*)range.contents;
-
-        printf("\tAgainst %llu to %llu\n", rng.source_range_start, rng.source_range_start + rng.range_length - 1);
-
-        unsigned long long int start = sourcerng.range_start > rng.source_range_start ? sourcerng.range_start : rng.source_range_start;
-        unsigned long long int end = sourcerng.range_start + sourcerng.range_length < rng.source_range_start + rng.range_length ?
-            sourcerng.range_start + sourcerng.range_length : rng.source_range_start + rng.range_length;
-        
-        if (start < end) {
-            printf("\tMatches %llu to %llu\n", start, end - 1);
-
-            CategoryRange *dest = (CategoryRange*)myalloc(sizeof(CategoryRange));
-            dest->range_start = start + rng.destination_range_start - rng.source_range_start;
-            dest->range_length = end - start;
-            List_append(dests, dest);
+            unsigned long long int start = src.range_start > rng.source_range_start ? src.range_start : rng.source_range_start;
+            unsigned long long int end = src.range_start + src.range_length < rng.source_range_start + rng.range_length ?
+                src.range_start + src.range_length : rng.source_range_start + rng.range_length;
+            
+            if (start < end) {
+                if (start > src.range_start) {
+                    CategoryRange *split = (CategoryRange*)myalloc(sizeof(CategoryRange));
+                    split->range_start = src.range_start;
+                    split->range_length = start - src.range_start;
+                    List_insert(source, split);
+                }
+                if (end < src.range_start + src.range_length) {
+                    CategoryRange *split = (CategoryRange*)myalloc(sizeof(CategoryRange));
+                    split->range_start = end;
+                    split->range_length = src.range_start + src.range_length - end;
+                    List_insert(source, split);
+                }
+                (**(CategoryRange**)source).range_start = start + rng.destination_range_start - rng.source_range_start;
+                (**(CategoryRange**)source).range_length = end - start;
+                break;
+            }
         }
     }
-
-    if (List_isempty(*dests)) {
-        CategoryRange *dest = (CategoryRange*)myalloc(sizeof(CategoryRange));
-        *dest = sourcerng;
-        List_append(dests, dest);
-    }
-
-    return dests;
 }
 
 int main() {
-    String inp = read_file("inp/day5-sample2.txt");
+    String inp = read_file("inp/day5.txt");
 
     const char *str = inp.contents;
     
@@ -105,13 +103,8 @@ int main() {
     }
 
     for (List map = maps; !List_isempty(map); map = *map.next) {
-        List nextSeeds = List_new();
-
-        for (List seed = seeds; !List_isempty(seed); seed = *seed.next) {
-            List_appendList(&nextSeeds, apply_map(*(CategoryRange*)seed.contents, *(List*)map.contents));
-        }
-
-        seeds = nextSeeds;
+        
+        apply_map(&seeds, *(List*)map.contents);
     }
 
     unsigned long long int ans = -1;
@@ -121,26 +114,6 @@ int main() {
     }
     
     printf("Answer = %llu\n", ans);
-
-    return 0;
-}
-
-int main2() {
-    List l1 = List_new(), l2 = List_new();
-    int nums[5] = { 1, 2, 3, 4, 5 };
-
-    for (int i = 0; i < 5; i++) {
-        List_append(&l1, nums + i);
-        List_append(&l2, nums + i);
-    }
-
-    List_appendList(&l1, &l2);
-
-    printf("%llu\n", List_size(l1));
-    for (List i = l1; !List_isempty(i); i = *i.next) {
-        printf("%d ", *(int*)i.contents);
-    }
-    printf("\n");
 
     return 0;
 }

@@ -113,6 +113,19 @@ void List_appendList(List *list1, List *list2) {
     }
 }
 
+void List_insert(List *list, void *item) {
+    List *newnode = List_newm();
+    
+    if (List_isempty(*list)) {
+        list->contents = item;
+        list->next = newnode;
+    } else {
+        newnode->contents = item;
+        newnode->next = list->next;
+        list->next = newnode;
+    }
+}
+
 /* --- Parsing --- */
 
 unsigned long long int parse_num(const char **str) {
