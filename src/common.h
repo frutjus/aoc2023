@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+typedef unsigned long long int ull;
+
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
@@ -18,7 +20,7 @@ typedef struct {
 } String;
 
 typedef struct {
-    unsigned long long int *contents;
+    ull *contents;
     size_t size;
 } ArrayInt;
 
@@ -128,8 +130,8 @@ void List_insert(List *list, void *item) {
 
 /* --- Parsing --- */
 
-unsigned long long int parse_num(const char **str) {
-    unsigned long long int num = 0;
+ull parse_num(const char **str) {
+    ull num = 0;
 
     while (isdigit(**str)) {
         num = num * 10 + charToDigit(**str);
@@ -181,7 +183,7 @@ ArrayInt parse_nums(const char **str, bool f(const char **str)) {
         size++;
     }
 
-    unsigned long long int *contents = (unsigned long long int*)malloc(size * sizeof(unsigned long long int));
+    ull *contents = (ull*)malloc(size * sizeof(ull));
 
     // then actually read the numbers in
     for (int i = 0; i < size; i++) {
