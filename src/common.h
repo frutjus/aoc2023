@@ -1,14 +1,18 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 typedef unsigned long long int ull;
 
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
-        printf("Error; could not allocate %lld bytes of memory\n", bytes);
+        fprintf(stderr, "Error; could not allocate %lld bytes of memory\n", bytes);
         exit(1);
     }
     return p;
@@ -27,7 +31,7 @@ typedef struct {
 String read_file(char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) {
-        printf("Error; could not open file: %s\n", path);
+        fprintf(stderr, "Error; could not open file: %s\n", path);
         exit(1);
     }
 
@@ -63,69 +67,6 @@ bool ArrayInt_contains(ArrayInt arr, int val) {
             return true;
     }
     return false;
-}
-
-/* --- Linked List --- */
-
-typedef struct _List {
-    void *contents;
-    struct _List *next;
-} List;
-
-List List_new() {
-    return (List) { .contents = 0, .next = 0 };
-}
-
-List *List_newm() {
-    List *list = (List*)myalloc(sizeof(List));
-    *list = List_new();
-    return list;
-}
-
-bool List_isempty(List list) {
-    return list.contents == 0;
-}
-
-void List_append(List *list, void *item) {
-    
-    if (List_isempty(*list)) {
-        List *newnode = List_newm();
-
-        list->contents = item;
-        list->next = newnode;
-    } else {
-        List_append(list->next, item);
-    }
-}
-
-size_t List_size(List list) {
-    if (List_isempty(list)) {
-        return 0;
-    } else {
-        return 1 + List_size(*list.next);
-    }
-}
-
-void List_appendList(List *list1, List *list2) {
-    if (List_isempty(*list1)) {
-        list1->contents = list2->contents;
-        list1->next = list2->next;
-    } else {
-        List_appendList(list1->next, list2);
-    }
-}
-
-void List_insert(List *list, void *item) {
-    List *newnode = List_newm();
-    
-    if (List_isempty(*list)) {
-        list->contents = item;
-        list->next = newnode;
-    } else {
-        newnode->contents = item;
-        newnode->next = list->next;
-        list->next = newnode;
-    }
 }
 
 /* --- Parsing --- */
@@ -273,4 +214,4 @@ void printGrid(Grid grid) {
     }
 }
 
-
+#endif
