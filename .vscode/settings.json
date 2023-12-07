@@ -3,6 +3,7 @@
         "common.h": "c",
         "string.h": "c",
         "compare": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "array": "c"
     }
 }

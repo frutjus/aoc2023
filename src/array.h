@@ -23,6 +23,21 @@
     (array).at[array.size++] = elem; \
 }
 
+#define Array_last(array) ((array).at[(array).size-1])
 
+#define Array_sort(type, array, f) { \
+    bool sorted; \
+    do { \
+        sorted = true; \
+        for(int i = 0; i < (array).size - 1; i++) { \
+            if (f((array).at[i], (array).at[i+1]) > 0) { \
+                sorted = false; \
+                type e = (array).at[i]; \
+                (array).at[i] = (array).at[i+1]; \
+                (array).at[i+1] = e; \
+            } \
+        } \
+    } while (!sorted); \
+}
 
 #endif

@@ -5,16 +5,13 @@
 #include "array.h"
 
 int main() {
-    Array(int) nums = Array_new(int);
+    struct {int a;} A = {21};
 
-    for (int i = 0; i < 16; i++) {
-        Array_push(nums, pow(2, i));
-    }
+    struct {int a;} B = {42};
 
-    printf("Size = %llu; Capacity = %llu;\n", nums.size, nums.capacity);
-    for (int i = 0; i < nums.size; i++) {
-        printf("%d: %d\n", i, nums.at[i]);
-    }
+    A = (typeof(A))B;
+
+    printf("%d\n", A.a);
 
     return 0;
 }
