@@ -14,7 +14,7 @@ typedef unsigned long long int ull;
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
-        fprintf(stderr, "Error; could not allocate %lld bytes of memory\n", bytes);
+        fprintf(stderr, "Error; could not allocate %zu bytes of memory\n", bytes);
         exit(1);
     }
     return p;
@@ -116,7 +116,7 @@ bool peek(const char *str, bool f(const char **str)) {
 }
 
 ArrayInt parse_nums(const char **str, bool f(const char **str)) {
-    int size = 0;
+    ull size = 0;
     const char *curstr = *str;
 
     // first figure out how large the array should be

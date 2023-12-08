@@ -34,7 +34,7 @@ bool atend(int *ghosts, size_t len, Node *nodes) {
 }
 
 int main() {
-    String inp = read_file("inp/day8-sample3.txt");
+    String inp = read_file("inp/day8.txt");
 
     const char *str = inp.contents;
 
@@ -74,16 +74,22 @@ int main() {
     }
 
     ull step = 0;
-/*
-    while (step < 6/*!atend(ghosts.at, ghosts.size, nodes)) {
-        //printf()
+
+    while (!atend(ghosts.at, ghosts.size, nodes)) {
+        if (step % 1000000 == 0) {
+            printf("Step %llu: ", step);
+            iter(i, ghosts.size) {
+                printf("%c%c%c ", nodes[ghosts.at[i]].name[0], nodes[ghosts.at[i]].name[1], nodes[ghosts.at[i]].name[2]);
+            }
+            printf("\n");
+        }
         Direction dir = dirs.at[step % dirs.size];
         iter(i, ghosts.size) {
             ghosts.at[i] = hash(dir == left ? nodes[ghosts.at[i]].left : nodes[ghosts.at[i]].right);
-            step++;
         }
+        step++;
     }
-*/
+
     printf("Answer = %llu\n", step);
 
     return 0;
