@@ -41,6 +41,7 @@ int main() {
 
     while (*str != '\0') {
         int index = hash(str);
+        printf("%d\n", index);
         str += 3;
         parse_string(&str, " = (");
         Pair pair;

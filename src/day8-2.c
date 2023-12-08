@@ -19,22 +19,12 @@ int hash(const char name[3]) {
 }
 
 typedef struct {
-    char name[3];
     char left[3];
     char right[3];
-} Node;
-
-bool atend(int *ghosts, size_t len, Node *nodes) {
-    iter(i, len) {
-        if (nodes[ghosts[i]].name[2] != 'Z') {
-            return false;
-        }
-    }
-    return true;
-}
+} Pair;
 
 int main() {
-    String inp = read_file("inp/day8.txt");
+    String inp = read_file("inp/day8-sample3.txt");
 
     const char *str = inp.contents;
 
@@ -47,7 +37,7 @@ int main() {
     parse_newline(&str);
 
     int nodeCount = 26 * 26 * 26;
-    Node nodes[nodeCount];
+    Pair nodes[nodeCount];
     Array(int) ghosts = Array_new(int);
 
     while (*str != '\0') {
@@ -55,10 +45,8 @@ int main() {
         if (str[2] == 'A') {
             Array_push(ghosts, index);
         }
-        Node pair;
-        pair.name[0] = *(str++);
-        pair.name[1] = *(str++);
-        pair.name[2] = *(str++);
+        Pair pair;
+        str += 3;
         parse_string(&str, " = (");
         pair.left[0] = *(str++);
         pair.left[1] = *(str++);
@@ -73,24 +61,45 @@ int main() {
         nodes[index] = pair;
     }
 
-    ull step = 0;
+    Array(int) visits = Array_new(int);
+    Array_push(visits, 1);
+    struct { ull first_visit, next_visit; } ghost_visits[ghosts.size];
 
-    while (!atend(ghosts.at, ghosts.size, nodes)) {
-        if (step % 1000000 == 0) {
-            printf("Step %llu: ", step);
-            iter(i, ghosts.size) {
-                printf("%c%c%c ", nodes[ghosts.at[i]].name[0], nodes[ghosts.at[i]].name[1], nodes[ghosts.at[i]].name[2]);
+    iter(ghost, ghosts.size) {
+        Array(int) next_visits = Array_new(int);
+        ull first_visit = 0, next_visit = 0, step = 0;
+        int first_visit_step;
+        int first_visit_node;
+
+        int current_node = ghosts.at[ghost];
+
+        while (next_visit == 0) {
+            Direction dir = dirs.at[step % dirs.size];
+            current_node = hash(dir == left ? nodes[current_node].left : nodes[current_node].right);
+            step++;
+
+            if (current_node % 26 == 25) {
+                if (first_visit == 0) {
+                    first_visit = step;
+                    first_visit_step = step % dirs.size;
+                    first_visit_node = current_node;
+                } else if (step % dirs.size == first_visit_step && current_node == first_visit_node) {
+                    next_visit = step;
+                }
             }
-            printf("\n");
         }
-        Direction dir = dirs.at[step % dirs.size];
-        iter(i, ghosts.size) {
-            ghosts.at[i] = hash(dir == left ? nodes[ghosts.at[i]].left : nodes[ghosts.at[i]].right);
-        }
-        step++;
+
+        ghost_visits[ghost].first_visit = first_visit;
+        ghost_visits[ghost].next_visit = next_visit;
     }
 
-    printf("Answer = %llu\n", step);
+    iter(i, ghosts.size) {
+        printf("fst = %llu; snd = %llu\n", ghost_visits[i].first_visit, ghost_visits[i].next_visit);
+    }
+
+    ull ans = 0;
+
+    printf("Answer = %llu\n", ans);
 
     return 0;
 }

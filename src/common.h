@@ -14,7 +14,7 @@ typedef unsigned long long int ull;
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
-        fprintf(stderr, "Error; could not allocate %zu bytes of memory\n", bytes);
+        fprintf(stderr, "Error; could not allocate %llu bytes of memory\n", bytes);
         exit(1);
     }
     return p;
