@@ -9,6 +9,8 @@
 
 typedef unsigned long long int ull;
 
+#define iter(i, n) for (int i = 0; i < n; i++)
+
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
