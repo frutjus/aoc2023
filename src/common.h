@@ -73,7 +73,24 @@ bool ArrayInt_contains(ArrayInt arr, int val) {
 
 /* --- Parsing --- */
 
-ull parse_num(const char **str) {
+long long int parse_num(const char **str) {
+    long long int num = 0;
+    bool negate = false;
+
+    if (**str == '-') {
+        (*str)++;
+        negate = true;
+    }
+
+    while (isdigit(**str)) {
+        num = num * 10 + charToDigit(**str);
+        (*str)++;
+    }
+
+    return num * (negate ? -1 : 1);
+}
+
+ull parse_unum(const char **str) {
     ull num = 0;
 
     while (isdigit(**str)) {

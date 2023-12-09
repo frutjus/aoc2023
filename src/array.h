@@ -40,4 +40,13 @@
     } while (!sorted); \
 }
 
+#define Array_reverse(type, array) { \
+    type *_old = (array).at; \
+    (array).at = myalloc(sizeof((array).at[0]) * (array).capacity); \
+    for (int i = 0; i < (array).size; i++) { \
+        (array).at[i] = _old[(array).size - i - 1]; \
+    } \
+    free(_old); \
+}
+
 #endif
