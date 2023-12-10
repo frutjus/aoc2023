@@ -180,7 +180,7 @@ bool skip_until(const char **str, bool f(const char **str)) {
 /* --- Grid --- */
 
 typedef struct {
-    char **contents;
+    char **at;
     int width, height;
 } Grid;
 
@@ -227,7 +227,7 @@ Grid gridFromString(String str) {
 void printGrid(Grid grid) {
     for (int r = 0; r < grid.height; r++) {
         for (int c = 0; c < grid.width; c++) {
-            printf("%c", grid.contents[r][c]);
+            printf("%c", grid.at[r][c]);
         }
         printf("\n");
     }
