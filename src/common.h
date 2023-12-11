@@ -231,4 +231,17 @@ void printGrid(Grid grid) {
     }
 }
 
+Grid copyGrid(Grid grid) {
+    char** new_grid;
+
+    new_grid = (char**)myalloc(grid.height * sizeof(char*));
+
+    iter(i, grid.height) {
+        new_grid[i] = (char*)myalloc(grid.width);
+        memcpy(new_grid[i], grid.at[i], grid.width);
+    }
+
+    return (Grid) { new_grid, grid.width, grid.height };
+}
+
 #endif
