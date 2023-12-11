@@ -185,15 +185,13 @@ typedef struct {
 } Grid;
 
 void measureDimensions(const String grid, int *width, int *height) {
+    const char *str = grid.contents;
     *width = 0;
+    *height = 0;
     for (int i = 0; !peek(grid.contents + i, parse_newline); i++) {
         (*width)++;
     }
-    for (int i = 0; i < grid.size; i++) {
-        if (peek(grid.contents + i, parse_newline)) {
-            (*height)++;
-        }
-    }
+    *height = countLines(str);
 }
 
 Grid gridFromString(String str) {
