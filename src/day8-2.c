@@ -23,8 +23,30 @@ typedef struct {
     char right[3];
 } Pair;
 
+ull gcd(ull l, ull r) {
+    ull divisor, dividend, remainder;
+    if (l < r) {
+        divisor = l;
+        dividend = r;
+    } else {
+        divisor = r;
+        dividend = l;
+    }
+
+    while ((remainder = dividend % divisor)) {
+        dividend = divisor;
+        divisor = remainder;
+    }
+
+    return divisor;
+}
+
+ull lcm(ull l, ull r) {
+    return l * r / gcd(l, r);
+}
+
 int main() {
-    String inp = read_file("inp/day8-sample3.txt");
+    String inp = read_file("inp/day8.txt");
 
     const char *str = inp.contents;
 
@@ -61,43 +83,32 @@ int main() {
         nodes[index] = pair;
     }
 
-    Array(int) visits = Array_new(int);
-    Array_push(visits, 1);
-    struct { ull first_visit, next_visit; } ghost_visits[ghosts.size];
+    ull ghost_visits[ghosts.size];
 
+    // find the step at which each 'ghost' first visits an end node
     iter(ghost, ghosts.size) {
-        Array(int) next_visits = Array_new(int);
-        ull first_visit = 0, next_visit = 0, step = 0;
-        int first_visit_step;
-        int first_visit_node;
+        ull first_visit = 0, step = 0;
 
         int current_node = ghosts.at[ghost];
 
-        while (next_visit == 0) {
+        while (first_visit == 0) {
             Direction dir = dirs.at[step % dirs.size];
             current_node = hash(dir == left ? nodes[current_node].left : nodes[current_node].right);
             step++;
 
             if (current_node % 26 == 25) {
-                if (first_visit == 0) {
-                    first_visit = step;
-                    first_visit_step = step % dirs.size;
-                    first_visit_node = current_node;
-                } else if (step % dirs.size == first_visit_step && current_node == first_visit_node) {
-                    next_visit = step;
-                }
+                first_visit = step;
             }
         }
 
-        ghost_visits[ghost].first_visit = first_visit;
-        ghost_visits[ghost].next_visit = next_visit;
+        ghost_visits[ghost] = first_visit;
     }
 
-    iter(i, ghosts.size) {
-        printf("fst = %llu; snd = %llu\n", ghost_visits[i].first_visit, ghost_visits[i].next_visit);
+    // This logic only works because every ghost takes exactly as long to get back to its end node as it took to get there the first time
+    ull ans = ghost_visits[0];
+    for (int i = 1; i < ghosts.size; i++) {
+        ans = lcm(ans, ghost_visits[i]);
     }
-
-    ull ans = 0;
 
     printf("Answer = %llu\n", ans);
 
