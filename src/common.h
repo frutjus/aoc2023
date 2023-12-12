@@ -9,7 +9,7 @@
 
 typedef unsigned long long int ull;
 
-#define iter(i, n) for (int i = 0; i < n; i++)
+#define iter(i, n) for (int i = 0; i < (n); i++)
 
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
@@ -26,7 +26,7 @@ typedef struct {
 } String;
 
 typedef struct {
-    ull *contents;
+    ull *at;
     size_t size;
 } ArrayInt;
 
@@ -65,7 +65,7 @@ int charToDigit(char c) {
 
 bool ArrayInt_contains(ArrayInt arr, int val) {
     for (int i = 0; i < arr.size; i++) {
-        if (arr.contents[i] == val)
+        if (arr.at[i] == val)
             return true;
     }
     return false;
@@ -151,7 +151,7 @@ ArrayInt parse_nums(const char **str, bool f(const char **str)) {
         f(str);
     }
 
-    return (ArrayInt) { .contents = contents, .size = size };
+    return (ArrayInt) { .at = contents, .size = size };
 }
 
 int countLines(const char *str) {
@@ -173,6 +173,14 @@ bool skip_until(const char **str, bool f(const char **str)) {
             return true;
         }
         (*str)++;
+    }
+    return false;
+}
+
+bool parse_comma(const char **str) {
+    if (**str == ',') {
+        (*str)++;
+        return true;
     }
     return false;
 }
