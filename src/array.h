@@ -20,7 +20,7 @@
         memcpy((array).at, _old, sizeof((array).at[0]) * (array).size); \
         free(_old); \
     } \
-    (array).at[array.size++] = elem; \
+    (array).at[(array).size++] = elem; \
 }
 
 #define Array_last(array) ((array).at[(array).size-1])

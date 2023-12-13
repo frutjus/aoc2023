@@ -66,6 +66,15 @@ bool ArrayInt_contains(ArrayInt arr, int val) {
     return false;
 }
 
+void ArrayInt_push(ArrayInt *arr, ull elem) {
+    arr->size++;
+    void *_old = arr->at;
+    arr->at = myalloc(sizeof(ull) * arr->size);
+    memcpy(arr->at, _old, sizeof(ull) * arr->size);
+    free(_old);
+    arr->at[arr->size] = elem;
+}
+
 /* --- Parsing --- */
 
 long long int parse_num(const char **str) {

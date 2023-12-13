@@ -83,8 +83,7 @@ ull count_ways(Record rec) {
 }
 
 int main() {
-    String inp = read_file("inp/day12.txt");
-    char *str = inp.contents;
+    char *str = read_file("inp/day12.txt");
 
     Array(Record) records = Array_new(Record);
 

@@ -27,49 +27,7 @@ ull minspace(ull *groups, ull current_group) {
     return sum - 1;
 }
 
-typedef struct {
-    char *springs;
-    char current_spring;
-    ull *groups;
-    ull current_group;
-    char expect;
-    ull result;
-} ArgTuple;
-
-Array(ArgTuple) memo;
-
-bool ArgTuple_equal(ArgTuple l, ArgTuple r) {
-    
-    if (l.springs != r.springs && strcmp(l.springs + 1, r.springs + 1) == 0) {
-        return false;
-    }
-
-    if (l.current_spring != r.current_spring) {
-        return false;
-    }
-
-    if (l.groups != r.groups) {
-        while (*(++l.groups) != -1 || *(++r.groups) != -1) {
-            if (*l.groups != *r.groups) {
-                return false;
-            }
-        }
-    }
-
-    if (l.current_group != r.current_group) {
-        return false;
-    }
-
-    if (l.expect != r.expect) {
-        return false;
-    }
-
-    return true;
-}
-
-ull possible(char* springs, char current_spring, ull *groups, ull current_group, char expect);
-
-ull _possible(char* springs, char current_spring, ull *groups, ull current_group, char expect) {
+ull possible(char* springs, char current_spring, ull *groups, ull current_group, char expect) {
     
     if (current_spring == '\0') {
         if (current_group != -1) {
@@ -79,7 +37,9 @@ ull _possible(char* springs, char current_spring, ull *groups, ull current_group
         return 1;
         
     }
-    if (strlen(springs) < minspace(groups, current_group)) {
+    ull len = strlen(springs);
+    ull space = minspace(groups, current_group);
+    if (len < space) {
         return 0;
     }
     if (current_spring == '#') {
@@ -121,28 +81,6 @@ ull _possible(char* springs, char current_spring, ull *groups, ull current_group
     exit(1);
 }
 
-ull possible(char* springs, char current_spring, ull *groups, ull current_group, char expect) {
-    ArgTuple args = { springs, current_spring, groups, current_group, expect };
-
-    iter(i, memo.size) {
-        if (ArgTuple_equal(memo.at[i], args)) {
-            return memo.at[i].result;
-        }
-    }
-
-    args.result = _possible(springs, current_spring, groups, current_group, expect);
-    Array_push(memo, args);
-    
-    printf("New result: springs=%s; current_spring=%c; groups=", springs, current_spring);
-    while (*groups != -1) {
-        printf("%llu,", *groups);
-        groups++;
-    }
-    printf(" current_group=%llu; expect=%c; result=%llu\n", current_group, expect, args.result);
-
-    return args.result;
-}
-
 ull count_ways(Record rec) {
     return possible(rec.springs, *rec.springs, rec.groups.at, *rec.groups.at, '?');
 }
@@ -151,10 +89,6 @@ int main() {
     char *str = read_file("inp/day12-sample.txt");
 
     Array(Record) records = Array_new(Record);
-
-    memo.at = (ArgTuple*)myalloc(sizeof(ArgTuple) * ARRAY_MIN_SIZE);
-    memo.size = 0;
-    memo.capacity = ARRAY_MIN_SIZE;
 
     while (*str != '\0') {
         Record rec;
@@ -167,29 +101,23 @@ int main() {
         }
         str++;
 
-        rec.springs = (char*)myalloc(len * 5 + 4 + 1);
-        int j = 0;
-        iter(i, 5) {
-            iter(k, len) {
-                rec.springs[j++] = temp_str[k];
-            }
-            if (i < 4) {
-                rec.springs[j++] = '?';
-            }
+        rec.springs = (char*)myalloc(len + 1);
+        iter(k, len) {
+            rec.springs[k] = temp_str[k];
         }
-        rec.springs[j] = '\0';
+        rec.springs[len] = '\0';
         
         ArrayInt groups = parse_nums((const char**)&str, parse_comma);
 
-        ull *new_groups = (ull*)myalloc(sizeof(ull) * groups.size * 5 + 1);
-        iter(i, groups.size * 5) {
+        ull *new_groups = (ull*)myalloc(sizeof(ull) * groups.size + 1);
+        iter(i, groups.size) {
             new_groups[i] = groups.at[i % groups.size];
         }
-        new_groups[groups.size * 5] = -1;
+        new_groups[groups.size] = -1;
 
         free(groups.at);
         rec.groups.at = new_groups;
-        rec.groups.size = groups.size * 5;
+        rec.groups.size = groups.size;
 
         parse_newline((const char**)&str);
 
@@ -207,12 +135,11 @@ int main() {
                 printf(",");
             }
         }
-        printf("\n");
 
         ull ways = count_ways(records.at[i]);
         ans += ways;
 
-        printf("[32m%llu[0m\n", ways);
+        printf(" [32m%llu[0m\n", ways);
     }
 
     printf("Answer = [32m%llu[0m\n", ans);
