@@ -21,16 +21,11 @@ void *myalloc(size_t bytes) {
 }
 
 typedef struct {
-    char *contents;
-    size_t size;
-} String;
-
-typedef struct {
     ull *at;
     size_t size;
 } ArrayInt;
 
-String read_file(char *path) {
+char *read_file(char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) {
         fprintf(stderr, "Error; could not open file: %s\n", path);
@@ -49,7 +44,7 @@ String read_file(char *path) {
 
     fclose(f);
 
-    return (String) { .contents = contents, .size = size };
+    return contents;
 }
 
 bool isPrefixOf(const char* str1, const char* str2) {
@@ -192,17 +187,16 @@ typedef struct {
     int width, height;
 } Grid;
 
-void measureDimensions(const String grid, int *width, int *height) {
-    const char *str = grid.contents;
+void measureDimensions(const char *grid, int *width, int *height) {
     *width = 0;
     *height = 0;
-    for (int i = 0; !peek(grid.contents + i, parse_newline); i++) {
+    for (int i = 0; !peek(grid + i, parse_newline); i++) {
         (*width)++;
     }
-    *height = countLines(str);
+    *height = countLines(grid);
 }
 
-Grid gridFromString(String str) {
+Grid gridFromString(char *str) {
     int width = 0, height = 0;
     measureDimensions(str, &width, &height);
 
@@ -214,7 +208,7 @@ Grid gridFromString(String str) {
     }
 
     int r = 0, c = 0;
-    for (const char *curstr = str.contents; *curstr != '\0'; curstr++) {
+    for (const char *curstr = str; *curstr != '\0'; curstr++) {
         if (parse_newline(&curstr)) {
             r++;
             c = 0;
@@ -225,7 +219,7 @@ Grid gridFromString(String str) {
         }
     }
 
-    free(str.contents);
+    //free(str.contents);
 
     return (Grid) { contents, width, height };
 }
@@ -250,6 +244,27 @@ Grid copyGrid(Grid grid) {
     }
 
     return (Grid) { new_grid, grid.width, grid.height };
+}
+
+Grid transposeGrid(Grid grid) {
+    char **new_grid = (char**)myalloc(grid.width * sizeof(char*));
+
+    iter(i, grid.width) {
+        new_grid[i] = (char*)myalloc(grid.height);
+        
+        iter(j, grid.height) {
+            new_grid[i][j] = grid.at[j][i];
+        }
+    }
+
+    return (Grid) { new_grid, grid.height, grid.width };
+}
+
+void deleteGrid(Grid grid) {
+    iter(i, grid.height) {
+        free(grid.at[i]);
+    }
+    free(grid.at);
 }
 
 #endif
