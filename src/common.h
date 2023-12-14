@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <string.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,7 @@ typedef unsigned long long int ull;
 void *myalloc(size_t bytes) {
     void *p = malloc(bytes);
     if (!p) {
-        fprintf(stderr, "Error; could not allocate %llu bytes of memory\n", bytes);
+        fprintf(stderr, "Error; could not allocate %llu bytes of memory\n", (ull)bytes);
         exit(1);
     }
     return p;
@@ -69,7 +70,7 @@ bool ArrayInt_contains(ArrayInt arr, int val) {
 void ArrayInt_push(ArrayInt *arr, ull elem) {
     arr->size++;
     void *_old = arr->at;
-    arr->at = myalloc(sizeof(ull) * arr->size);
+    arr->at = (ull*)myalloc(sizeof(ull) * arr->size);
     memcpy(arr->at, _old, sizeof(ull) * arr->size);
     free(_old);
     arr->at[arr->size] = elem;
@@ -227,8 +228,6 @@ Grid gridFromString(char *str) {
             c++;
         }
     }
-
-    //free(str.contents);
 
     return (Grid) { contents, width, height };
 }

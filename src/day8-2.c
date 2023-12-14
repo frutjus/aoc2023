@@ -46,9 +46,7 @@ ull lcm(ull l, ull r) {
 }
 
 int main() {
-    String inp = read_file("inp/day8.txt");
-
-    const char *str = inp.contents;
+    const char *str = read_file("inp/day8.txt");
 
     Array(Direction) dirs = Array_new(Direction);
 
