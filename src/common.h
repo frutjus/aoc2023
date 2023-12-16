@@ -206,7 +206,7 @@ void measureDimensions(const char *grid, int *width, int *height) {
     *height = countLines(grid);
 }
 
-Grid gridFromString(char *str) {
+Grid gridFromString(const char *str) {
     int width = 0, height = 0;
     measureDimensions(str, &width, &height);
 
@@ -273,6 +273,22 @@ void deleteGrid(Grid grid) {
         free(grid.at[i]);
     }
     free(grid.at);
+}
+
+typedef struct {
+    int **at;
+    int width, height;
+} GridInt;
+
+GridInt gridIntFromGrid(Grid grid) {
+    int **contents = (int**)myalloc(sizeof(int*) * grid.height);
+
+    iter(r, grid.height) {
+        contents[r] = (int*)myalloc(sizeof(int) * grid.width);
+        memset(contents[r], 0, sizeof(int) * grid.width);
+    }
+
+    return (GridInt) { .at = contents, .width = grid.width, .height = grid.height };
 }
 
 #endif

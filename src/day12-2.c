@@ -198,7 +198,7 @@ int main() {
 
     ull ans = 0;
 
-    iter(i, records.size) {
+    iter(i, records.size) if (i == 1) {
         printf("%s ", records.at[i].springs);
         
         iter(j, records.at[i].groups.size) {
@@ -215,7 +215,7 @@ int main() {
         printf("[32m%llu[0m\n", ways);
     }
 
-    printf("Answer = [32m%llu[0m\n", ans);
+    //printf("Answer = [32m%llu[0m\n", ans);
 
     return 0;
 }
