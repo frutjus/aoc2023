@@ -5,7 +5,6 @@
 
 #include "common.h"
 #include "array.h"
-#include "list.h"
 
 typedef struct {
     char *springs;
@@ -33,10 +32,27 @@ typedef struct {
     ull *groups;
     ull current_group;
     char expect;
-    ull result;
 } ArgTuple;
 
-Array(ArgTuple) memo;
+typedef struct _List {
+    ArgTuple key;
+    ull value;
+    struct _List *tail;
+} List;
+
+List List_new() {
+    return (List) { .key = { 0 }, .value = 0, .tail = 0 };
+}
+
+List *List_newm() {
+    List *list = (List*)myalloc(sizeof(List));
+    *list = List_new();
+    return list;
+}
+
+bool List_isempty(List list) {
+    return list.tail == 0;
+}
 
 bool ArgTuple_equal(ArgTuple l, ArgTuple r) {
     
@@ -68,84 +84,130 @@ bool ArgTuple_equal(ArgTuple l, ArgTuple r) {
     return true;
 }
 
-ull possible(char* springs, char current_spring, ull *groups, ull current_group, char expect);
+ull List_insert(List *list, ArgTuple key, ull f(ArgTuple)) {
+    if (List_isempty(*list)) {
+        List *tail = List_newm();
+        list->key = key;
+        list->value = f(key);
+        list->tail = tail;
+        return list->value;
+    } else if (ArgTuple_equal(list->key, key)) {
+        return list->value;
+    } else {
+        return List_insert(list->tail, key, f);
+    }
+}
 
-ull _possible(char* springs, char current_spring, ull *groups, ull current_group, char expect) {
+ull List_size(List list) {
+    if (List_isempty(list)) {
+        return 0;
+    } else {
+        return 1 + List_size(*list.tail);
+    }
+}
+
+#define MAP_BUCKETS 256
+
+typedef struct {
+    List buckets[MAP_BUCKETS];
+} Hashmap;
+
+Hashmap Map_new() {
+    Hashmap map;
+
+    iter(i, MAP_BUCKETS) {
+        map.buckets[i] = List_new();
+    }
+
+    return map;
+}
+
+int hash(ArgTuple *key) {
+    int current_value = 0;
+
+    iter(i, sizeof(ArgTuple)) {
+        current_value = ((current_value + *((char*)key + i)) * 17) % MAP_BUCKETS;
+    }
+
+    return current_value;
+}
+
+ull Map_insert(Hashmap *map, ArgTuple key, ull f(ArgTuple)) {
+    int keyhash = hash(&key);
+
+    return List_insert(&map->buckets[keyhash], key, f);
+}
+
+ull Map_size(Hashmap *map) {
+    ull size = 0;
+    iter(i, MAP_BUCKETS) {
+        size += List_size(map->buckets[i]);
+    }
+    return size;
+}
+
+Hashmap memo;
+
+ull possible(ArgTuple args);
+
+ull _possible(ArgTuple args) {
     
-    if (current_spring == '\0') {
-        if (current_group != -1) {
+    if (args.current_spring == '\0') {
+        if (args.current_group != -1) {
             return 0; 
         }
 
         return 1;
         
     }
-    if (strlen(springs) < minspace(groups, current_group)) {
+    if (strlen(args.springs) < minspace(args.groups, args.current_group)) {
         return 0;
     }
-    if (current_spring == '#') {
-        if (expect == '.') {
+    if (args.current_spring == '#') {
+        if (args.expect == '.') {
             return 0;
         }
-        if (current_group == -1) {
+        if (args.current_group == -1) {
             return 0;
         }
 
-        current_group--;
+        args.current_group--;
 
-        if (current_group == 0) {
-            expect = '.';
-            groups++;
-            current_group = *groups;
+        if (args.current_group == 0) {
+            args.expect = '.';
+            args.groups++;
+            args.current_group = *args.groups;
         } else {
-            expect = '#';
+            args.expect = '#';
         }
 
-        return possible(springs + 1, *(springs + 1), groups, current_group, expect);
+        return possible((ArgTuple) { args.springs + 1, *(args.springs + 1), args.groups, args.current_group, args.expect});
 
     }
-    if (current_spring == '.') {
-        if (expect == '#') {
+    if (args.current_spring == '.') {
+        if (args.expect == '#') {
             return 0;
         }
 
-        expect = '?';
-        return possible(springs + 1, *(springs + 1), groups, current_group, expect);
+        args.expect = '?';
+        return possible((ArgTuple) { args.springs + 1, *(args.springs + 1), args.groups, args.current_group, args.expect});
 
     }
-    if (current_spring == '?') {
-        return possible(springs, '#', groups, current_group, expect)
-             + possible(springs, '.', groups, current_group, expect);
+    if (args.current_spring == '?') {
+        return possible((ArgTuple) { args.springs, '#', args.groups, args.current_group, args.expect })
+             + possible((ArgTuple) { args.springs, '.', args.groups, args.current_group, args.expect });
     }
     
-    printf("Unrecognised spring: %c\n", *springs);
+    printf("Unrecognised spring: %c\n", *args.springs);
     exit(1);
 }
 
-ull possible(char* springs, char current_spring, ull *groups, ull current_group, char expect) {
-    ArgTuple args = { springs, current_spring, groups, current_group, expect };
-
-    iter(i, memo.size) {
-        if (ArgTuple_equal(memo.at[i], args)) {
-            return memo.at[i].result;
-        }
-    }
-
-    args.result = _possible(springs, current_spring, groups, current_group, expect);
-    Array_push(memo, args);
-    
-    /* printf("New result: springs=%s; current_spring=%c; groups=", springs, current_spring);
-    while (*groups != -1) {
-        printf("%llu,", *groups);
-        groups++;
-    }
-    printf(" current_group=%llu; expect=%c; result=%llu\n", current_group, expect, args.result); */
-
-    return args.result;
+ull possible(ArgTuple args) {
+    return Map_insert(&memo, args, _possible);
 }
 
 ull count_ways(Record rec) {
-    return possible(rec.springs, *rec.springs, rec.groups.at, *rec.groups.at, '?');
+    return possible((ArgTuple) { rec.springs, *rec.springs, rec.groups.at, *rec.groups.at, '?' });
 }
 
 int main() {
@@ -153,9 +215,7 @@ int main() {
 
     Array(Record) records = Array_new(Record);
 
-    memo.at = (ArgTuple*)myalloc(sizeof(ArgTuple) * ARRAY_MIN_SIZE);
-    memo.size = 0;
-    memo.capacity = ARRAY_MIN_SIZE;
+    memo = Map_new();
 
     while (*str != '\0') {
         Record rec;
@@ -215,7 +275,7 @@ int main() {
         printf(" [32m%llu[0m\n", ways);
     }
 
-    printf("Answer = [32m%llu[0m\nMemo size = %llu\n", ans, memo.size);
+    printf("Answer = [32m%llu[0m\nMemo size = %llu\n", ans, Map_size(&memo));
 
     return 0;
 }
