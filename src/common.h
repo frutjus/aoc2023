@@ -275,20 +275,10 @@ void deleteGrid(Grid grid) {
     free(grid.at);
 }
 
-typedef struct {
-    int **at;
-    int width, height;
-} GridInt;
-
-GridInt gridIntFromGrid(Grid grid) {
-    int **contents = (int**)myalloc(sizeof(int*) * grid.height);
-
+void zeroGrid(Grid grid) {
     iter(r, grid.height) {
-        contents[r] = (int*)myalloc(sizeof(int) * grid.width);
-        memset(contents[r], 0, sizeof(int) * grid.width);
+        memset(grid.at[r], 0, sizeof(int) * grid.width);
     }
-
-    return (GridInt) { .at = contents, .width = grid.width, .height = grid.height };
 }
 
 #endif
