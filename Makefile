@@ -12,8 +12,8 @@ ifeq ($(OS),Windows_NT)
 	ext += .exe
 endif
 
-run: exe/$(DAY).$(ext)
-	./exe/$(DAY).$(ext)
+run: exe/$(DAY)$(ext)
+	./exe/$(DAY)$(ext)
 
-exe/$(DAY).$(ext): src/$(DAY).c Makefile $(hdrs)
-	gcc src/$(DAY).c -o exe/$(DAY).$(ext) $(flgs) $(inc) $(lnk)
+exe/$(DAY)$(ext): src/$(DAY).c Makefile $(hdrs)
+	gcc src/$(DAY).c -o exe/$(DAY)$(ext) $(flgs) $(inc) $(lnk)
